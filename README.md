@@ -1,73 +1,275 @@
-# React + TypeScript + Vite
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
-Currently, two official plugins are available:
+# 自分でカレーを作ろう。
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+**東京（2026年）における「カレーを手に入れるまで」の確率と行動のシミュレーション**
 
-## React Compiler
+---
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## 概要
 
-## Expanding the ESLint configuration
+これは「カレーを作るゲーム」ではありません。
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+本プロジェクトは、
+**私たちが普段“切り取られた結果”しか見ていない現実の裏側にある、不可視の前提条件を可視化するシミュレーター**です。
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+プレイヤーは「カレーを作る」という単純な目標を通じて、
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+* 住居
+* インフラ
+* 契約
+* 初期資本
+* 時間
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+といった、**通常は前提として扱われる構造**に直面します。
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+プレイ時間は5分前後です。
+バグ取り、仕様バグつぶし中なので、正常に動かない部分もあるかと思います。
+Geminiと一緒にプログラミングがほぼできない人が作っています。
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+---
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+## コンセプト
+
+> 「自分でカレーを作ろう」
+
+この一文の裏には、以下の前提が存在します：
+
+* 火が使える
+* 水が使える
+* 調理器具がある
+* 食材を保存できる
+* そもそも住む場所がある
+
+本作は、それらを**“後から理解させる”構造**を持ちます。
+
+---
+
+## 設計思想
+
+### ■ 表層と深層
+
+| レイヤー | 内容              |
+| ---- | --------------- |
+| 表層   | カレーを作る          |
+| 深層   | 社会インフラ・資本・時間・信用 |
+
+---
+
+### ■ 遅延理解型デザイン
+
+プレイヤーは最初、こう考えます：
+
+> 「材料を買えば作れる」
+
+しかし実際には：
+
+* 火が使えない
+* 食材が腐る
+* 契約に時間がかかる
+* 初期費用が払えない
+
+→ **違和感 → 理解 → 構造把握**
+
+---
+
+## ゲームの目的
+
+### 表の目的
+
+* カレーを作る
+
+### 裏の目的
+
+* 「初めの1歩」に必要な構造を理解する
+
+---
+
+## 背景
+
+本プロジェクトは、開発者自身が
+
+* 役所
+* 福祉相談所
+* 弁護士
+
+に相談する過程で感じた、
+
+> 「これが普通である」という前提のズレ
+
+を出発点としています。
+
+---
+
+## ゲーム構造
+
+### 初期条件：「思い出せ」
+
+プレイヤーは「自分が何者か」を思い出すため、
+統計ベースの確率に基づく初期資産を得ます。
+
+#### 親ガチャ（初期資本）
+
+| レアリティ   | 確率  | 初期資金       |
+| ------- | --- | ---------- |
+| SSR 資産家 | 5%  | 3,000,000円 |
+| SR 安定層  | 20% | 400,000円   |
+| R ギリギリ層 | 45% | 50,000円    |
+| N 困窮/絶縁 | 30% | 0円         |
+
+---
+
+## 基本パラメータ
+
+| 項目    | 値                |
+| ----- | ---------------- |
+| 体力上限  | 30               |
+| 初期体力  | 10               |
+| 所持金   | 可変               |
+| 生存コスト | 1,000〜1,900円 / 日 |
+
+---
+
+## 行動システム
+
+### 労働
+
+| 種類   | 収入       | 体力 |
+| ---- | -------- | -- |
+| タイミー | 約9,800円  | -1 |
+| 住み込み | 約14,000円 | -1 |
+
+---
+
+### 社会システム（時間の壁）
+
+| 手続き      | 待機時間 |
+| -------- | ---- |
+| マイナンバー申請 | 45日  |
+| アパート契約   | 90日  |
+| インフラ開通   | 14日  |
+
+---
+
+## 進行フロー
+
+1. 元手を確保する
+2. 住居を得る
+3. インフラ契約
+4. 引っ越し
+5. インフラ開通
+6. 調理器具を揃える
+7. 調味料・食材を揃える
+8. カレーを作る
+
+---
+
+## クリア条件
+
+以下がすべて揃った時：
+
+* 調理器具
+* 食材
+* 火（インフラまたは環境）
+
+→ 「カレーを作る」ボタンが解放される
+
+---
+
+## 体験設計
+
+### シニカル要素
+
+* 買ったらすぐに作る必要がある
+* 契約には待ち時間がある
+* 初期費用が払えない
+* スマホ代は毎月かかる
+
+---
+
+### メッセージ設計
+
+説明ではなく、**事象で理解させる**
+
+例：
+
+* ❌「ガスが必要です」
+* ✅「火が使えない」
+* ✅「昨日の肉が傷んだ」
+
+---
+
+## ルート分岐
+
+### 住み込みルート
+
+* インフラ完備
+* 信頼を積むことで調理可能
+
+### 自立ルート
+
+* すべて自力で構築
+* 最も負荷が高い
+
+---
+
+## メタシステム（拡張予定）
+
+クリア後に解放：
+
+* 初期条件操作
+* 時間スキップ
+* リソース操作
+
+---
+
+## 技術仕様（プロトタイプ）
+
+* HTML + JavaScript
+* スマホブラウザ対応
+* ローカルストレージ保存
+
+---
+
+## ターゲット
+
+* 「カレー」に反応する層
+* サバイバル・生活シミュレーション好き
+* 社会構造に興味のあるユーザー
+
+---
+
+## このゲームの本質
+
+> カレーはゴールではない。
+> **“前提を持つこと”の重さを知るための装置である。**
+
+---
+
+## 訓練の目的（隠しコンセプト）
+
+このゲームは、
+
+* 主観的な体験を
+* 統計的な構造として再認識し
+
+**現実を生きるための視座を獲得する訓練装置**である。
+
+---
+
+## ステータス
+
+* プロトタイプ設計段階
+* 1時間実装を前提としたミニマル構成
+
+---
+
+## 今後の拡張
+
+* 親ガチャ精度の向上（統計反映）
+* 性別・年齢差分
+* 福祉・セーフティネット分岐
+* UI/UX改善
+
+---
+
