@@ -1,0 +1,58 @@
+export const CONTENT = {
+  GACHA: {
+    TITLE: '自分は何者だったか？',
+    BUTTON: '自分が何者なのかを思い出すためにダイスを振る',
+    DESC: '「カレーを自分で作って食べたい」それが今の目標だ。',
+  },
+  LOG: {
+    PROLOGUE: 'Day 0: 【訓練開始】目標：自力でカレーを食す。',
+  },
+  SUCCESS: {
+    TITLE: 'ミッション・コンプリート',
+    DESC: 'あなたは不条理を乗り越え、自力でカレーを食べる権利を手に入れた。',
+    RESTART: 'リスタート',
+  },
+  IDENTITY: {
+    SSR_TITLE: '資産家',
+    SR_TITLE: '安定層',
+    R_TITLE: 'ギリギリ層',
+    N_TITLE: '困窮/絶縁',
+    MYNUMBER_PENDING: '未発行',
+    MYNUMBER_ACTIVE: '有効',
+  },
+  FOOTER: {
+    TAGLINE: '令和8年度 統計調査に基づくサバイバル訓練用シミュレーター',
+    COPYRIGHT: '© 2026 Curry Scapegoat Project',
+    RESET_BUTTON: '記憶を全て消してやり直す',
+    RESET_CONFIRM: '本当に記憶を全て消して、0からやり直しますか？',
+  },
+  ACTIONS: {
+    WORK_TIMEE_LABEL: 'タイミー (高時給/要マイナ)',
+    WORK_SUMIKOMI_LABEL: '住み込み (低固定費/信頼)',
+    REST_FREE: '無料の癒やし (+5)',
+    REST_PAID: '課金の癒やし (+15/-5k)',
+    HOUSE_PENDING: (days: number) => `新居への移転待機中 (あと${days}日)`,
+    HOUSE_APPLY: 'アパートを借りる (-25万/-1/待機90日)',
+    KITCHEN_BUILDING_TRUST: (remaining: number) => `住み込み信頼構築中 (あと${remaining}日)`,
+    KITCHEN_NEGOTIATE: '神様にキッチンの利用を願い出る (-1)',
+    INFRA_PENDING: (days: number) => `インフラ開通待ち (あと${days}日)`,
+    INFRA_APPLY: '新居のインフラを申請する (-1/待機14日)',
+    MYNUMBER_PENDING: (days: number) => `マイナカード発行待ち (あと${days}日)`,
+    MYNUMBER_APPLY: '役所でマイナカードを申請 (-1/待機14日)',
+    BUY_COOKWARE: '調理器具(-5,000)',
+    BUY_FOOD: 'カレーの具材(-2,000)',
+    INSUFFICIENT_FUNDS: '資金が足りません！',
+  },
+  STATUS: {
+    MONEY_LABEL: '所持金',
+    HEALTH_LABEL: '体力',
+    TRUST_LABEL: '住み込み信頼度',
+    ICONS: {
+      HOME: '家',
+      WATER: '水',
+      ELECTRICITY: '電',
+      GAS: '火',
+      INGREDIENTS: '具',
+    },
+  },
+};
