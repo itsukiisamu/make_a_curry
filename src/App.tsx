@@ -1,172 +1,155 @@
-import React, { useState, useEffect, useRef } from 'react';
-import './App.css';
+import { useState, useEffect } from 'react'
 
-// --- 型定義 (TypeScript) ---
-interface Ingredient {
-  id: string;
-  name: string;
-  price: number;
-  quality: number;
-}
+// --- 型定義 ---
+type Step = 'birth' | 'life' | 'cooking' | 'result';
 
-interface GameState {
-  step: 'birth' | 'market' | 'cook' | 'result';
-  budget: number;
-  luck: number;
-  skill: number;
-  inventory: Ingredient[];
-  quality: number;
+interface State {
+  step: Step;
+  money: number;
+  health: number;
+  luckType: string;
+  daysPassed: number;
   logs: string[];
-  curryName: string;
+  infrastructure: {
+    myNumber: number; // 完了まで45日
+    apartment: number; // 完了まで90日
+    energy: number;    // 完了まで14日
+  };
+  inventory: string[];
 }
-
-const INGREDIENTS: Ingredient[] = [
-  { id: 'onion', name: "たまねぎ", price: 200, quality: 10 },
-  { id: 'meat', name: "高級牛肉", price: 1500, quality: 40 },
-  { id: 'pork', name: "豚こま切れ", price: 400, quality: 15 },
-  { id: 'carrot', name: "にんじん", price: 150, quality: 5 },
-  { id: 'spice', name: "特製スパイス", price: 800, quality: 25 },
-];
 
 export default function App() {
-  const [state, setState] = useState<GameState>({
+  const [state, setState] = useState<State>({
     step: 'birth',
-    budget: 0,
-    luck: 0,
-    skill: 10,
-    inventory: [],
-    quality: 0,
-    logs: ["システム起動。人生とカレーのシミュレーターへようこそ。"],
-    curryName: "未完成の概念"
+    money: 0,
+    health: 10,
+    luckType: '',
+    daysPassed: 0,
+    logs: ['シミュレーターを起動しました。'],
+    infrastructure: { myNumber: 0, apartment: 0, energy: 0 },
+    inventory: []
   });
 
-  const logEndRef = useRef<HTMLDivElement>(null);
-
-  // ログが追加されたら自動スクロール
-  useEffect(() => {
-    logEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [state.logs]);
-
   const addLog = (msg: string) => {
+    setState(prev => ({ ...prev, logs: [`[Day ${prev.daysPassed}] ${msg}`, ...prev.logs].slice(0, 50) }));
+  };
+
+  // 1. 出生ガチャ (READMEの確率に基づく)
+  const rollBirth = () => {
+    const rnd = Math.random() * 100;
+    let result = { type: 'N 困窮/絶縁', money: 0 };
+    if (rnd < 5) result = { type: 'SSR 資産家', money: 3000000 };
+    else if (rnd < 25) result = { type: 'SR 安定層', money: 400000 };
+    else if (rnd < 70) result = { type: 'R ギリギリ層', money: 50000 };
+
     setState(prev => ({
       ...prev,
-      logs: [...prev.logs, `[${new Date().toLocaleTimeString()}] ${msg}`]
+      step: 'life',
+      money: result.money,
+      luckType: result.type
     }));
+    addLog(`出生確定：${result.type}。所持金 ${result.money.toLocaleString()}円から開始。`);
   };
 
-  // 1. 出生ガチャ
-  const handleBirth = () => {
-    const traits = [
-      { name: "裕福な家庭", budget: 5000, luck: 80 },
-      { name: "一般的な家庭", budget: 2000, luck: 50 },
-      { name: "困窮した家庭", budget: 500, luck: 20 }
-    ];
-    const trait = traits[Math.floor(Math.random() * traits.length)];
-    
-    setState(prev => ({
-      ...prev,
-      step: 'market',
-      budget: trait.budget,
-      luck: trait.luck,
-    }));
-    addLog(`出生ガチャ：あなたは「${trait.name}」として生まれた。予算は${trait.budget}円。`);
-  };
+  // 2. 日常の進行 (1日経過)
+  const nextDay = (action: 'work_timee' | 'work_livein' | 'rest' | 'apply') => {
+    setState(prev => {
+      let nMoney = prev.money;
+      let nHealth = prev.health;
+      let nInfra = { ...prev.infrastructure };
+      const cost = 1000 + Math.floor(Math.random() * 901); // 生存コスト 1000-1900円
 
-  // 2. 買い物
-  const buyItem = (item: Ingredient) => {
-    if (state.budget >= item.price) {
-      setState(prev => ({
+      // アクション処理
+      if (action === 'work_timee') {
+        nMoney += 9800;
+        nHealth -= 3;
+      } else if (action === 'work_livein') {
+        nMoney += 14000;
+        nHealth -= 5;
+      } else if (action === 'rest') {
+        nHealth = Math.min(30, nHealth + 5);
+      } else if (action === 'apply') {
+        if (nInfra.myNumber === 0) nInfra.myNumber = 45;
+        else if (nInfra.apartment === 0) nInfra.apartment = 90;
+        else if (nInfra.energy === 0) nInfra.energy = 14;
+      }
+
+      // インフラのカウントダウン
+      if (nInfra.myNumber > 0) nInfra.myNumber--;
+      if (nInfra.apartment > 0) nInfra.apartment--;
+      if (nInfra.energy > 0) nInfra.energy--;
+
+      nMoney -= cost;
+
+      if (nHealth <= 0 || nMoney < 0) {
+        return { ...prev, step: 'result', logs: ['生存不能になりました。', ...prev.logs] };
+      }
+
+      return {
         ...prev,
-        budget: prev.budget - item.price,
-        inventory: [...prev.inventory, item],
-        quality: prev.quality + item.quality
-      }));
-      addLog(`${item.name}を購入。`);
-    } else {
-      addLog("資金が足りない。これが社会の壁だ。");
-    }
-  };
-
-  // 3. 調理
-  const startCook = () => {
-    setState(prev => ({ ...prev, step: 'cook' }));
-    addLog("調理を開始。淡々と火を通す。");
-
-    setTimeout(() => {
-      const isSuccess = Math.random() * 100 < (state.luck + state.skill);
-      const finalQuality = isSuccess ? state.quality + 10 : state.quality - 20;
-      let name = "名もなき煮込み";
-      if (finalQuality > 80) name = "至高のカレー";
-      else if (finalQuality > 40) name = "普通のカレー";
-
-      setState(prev => ({
-        ...prev,
-        step: 'result',
-        quality: finalQuality,
-        curryName: name
-      }));
-      addLog(`調理完了。${name}が完成した。`);
-    }, 2000);
-  };
-
-  const resetGame = () => {
-    window.location.reload();
+        daysPassed: prev.daysPassed + 1,
+        money: nMoney,
+        health: nHealth,
+        infrastructure: nInfra
+      };
+    });
   };
 
   return (
-    <div className="game-container">
-      <header>
-        <h1>Curry Scapegoat</h1>
-        <div className="status-bar">
-          資金: {state.budget}円 | 運: {state.luck} | 品質: {state.quality}
-        </div>
-      </header>
+    <div className="min-h-screen bg-slate-900 text-slate-100 p-4 font-mono">
+      <div className="max-w-md mx-auto bg-slate-800 rounded-lg shadow-xl overflow-hidden">
+        <header className="bg-orange-600 p-4 shadow-md">
+          <h1 className="text-xl font-bold">Curry Scapegoat</h1>
+          <div className="flex justify-between text-sm mt-2">
+            <span>💰 {state.money.toLocaleString()}円</span>
+            <span>❤️ {state.health}/30</span>
+            <span>📅 {state.daysPassed}日目</span>
+          </div>
+        </header>
 
-      <main>
-        {state.step === 'birth' && (
-          <section className="scene">
-            <p>人生は最初のガチャで決まる部分が多い。</p>
-            <button onClick={handleBirth}>出生ガチャを回す</button>
-          </section>
-        )}
-
-        {state.step === 'market' && (
-          <section className="scene">
-            <h2>材料調達</h2>
-            <div className="grid">
-              {INGREDIENTS.map(item => (
-                <button key={item.id} onClick={() => buyItem(item)}>
-                  {item.name} ({item.price}円)
-                </button>
-              ))}
+        <main className="p-4 space-y-4">
+          {state.step === 'birth' && (
+            <div className="text-center py-10">
+              <p className="mb-6 text-slate-400">人生の前提を統計的に決定します。</p>
+              <button onClick={rollBirth} className="bg-orange-500 hover:bg-orange-400 px-8 py-3 rounded-full font-bold transition">出生ガチャを回す</button>
             </div>
-            <button className="next-btn" onClick={startCook}>調理へ</button>
-          </section>
-        )}
+          )}
 
-        {state.step === 'cook' && (
-          <section className="scene">
-            <h2>調理中...</h2>
-            <div className="spinner"></div>
-          </section>
-        )}
+          {state.step === 'life' && (
+            <div className="space-y-4">
+              <div className="bg-slate-700 p-3 rounded text-sm">
+                <p>現在の身分: <span className="text-orange-400">{state.luckType}</span></p>
+                <div className="mt-2 text-xs text-slate-400">
+                  インフラ待機: MN({state.infrastructure.myNumber}) 居({state.infrastructure.apartment}) ⚡({state.infrastructure.energy})
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-2">
+                <button onClick={() => nextDay('work_timee')} className="bg-blue-600 p-2 rounded text-sm hover:bg-blue-500">タイミー (-3❤️/+9.8k)</button>
+                <button onClick={() => nextDay('work_livein')} className="bg-purple-600 p-2 rounded text-sm hover:bg-purple-500">住み込み (-5❤️/+14k)</button>
+                <button onClick={() => nextDay('apply')} className="bg-emerald-600 p-2 rounded text-sm hover:bg-emerald-500">役所・契約手続</button>
+                <button onClick={() => nextDay('rest')} className="bg-slate-600 p-2 rounded text-sm hover:bg-slate-500">休息 (+5❤️)</button>
+              </div>
 
-        {state.step === 'result' && (
-          <section className="scene">
-            <h2>結果: {state.curryName}</h2>
-            <p>品質スコア: {state.quality}</p>
-            <button onClick={resetGame}>もう一度人生をやり直す</button>
-          </section>
-        )}
-      </main>
+              {state.infrastructure.energy === 0 && state.daysPassed > 0 && (
+                <button className="w-full bg-orange-600 p-3 rounded font-bold animate-bounce">🍛 カレーを作る</button>
+              )}
+            </div>
+          )}
 
-      <aside className="log-panel">
-        <h3>観測ログ</h3>
-        <div className="log-list">
-          {state.logs.map((log, i) => <div key={i} className="log-entry">{log}</div>)}
-          <div ref={logEndRef} />
-        </div>
-      </aside>
+          {state.step === 'result' && (
+            <div className="text-center py-10">
+              <h2 className="text-2xl font-bold text-red-500 mb-4">GAME OVER</h2>
+              <p className="mb-6">カレーに辿り着く前に、社会的な生存が終了しました。</p>
+              <button onClick={() => window.location.reload()} className="text-orange-400 underline">もう一度最初から</button>
+            </div>
+          )}
+        </main>
+
+        <footer className="bg-black p-4 h-48 overflow-y-auto text-xs space-y-1 border-t border-slate-700">
+          {state.logs.map((log, i) => <div key={i} className={i === 0 ? "text-orange-400" : "text-slate-500"}>{log}</div>)}
+        </footer>
+      </div>
     </div>
   );
 }
